@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "science_read"
+authors = [
+    {name = "Michal Jastrzebski", email = "inc007@gmail.com"},
+]
+description = "Read aloud tool for scientific papers"
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["tts"]
+license = {text = "BSD-3-Clause"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "pytest",
+    "requests",
+    "python-slugify",
+    "pyquery",
+    "nltk",
+    "readability-lxml",
+    "click",
+    "transformers",
+    "torch",
+    "tqdm",
+]
+dynamic = ["version"]
+
+[project.scripts]
+scienceread = "cli:read"
