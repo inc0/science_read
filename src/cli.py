@@ -29,7 +29,7 @@ def read(src, dest, small):
     voice_preset = "v2/en_speaker_6"
     result = []
 
-    for section in tqdm(text[:20]):
+    for section in tqdm(text):
         inputs = processor(
             text=section,
             return_tensors="pt",
