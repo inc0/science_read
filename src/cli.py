@@ -1,10 +1,15 @@
 import click
 from templates.arxiv import ArxivTemplate
 from transformers import AutoProcessor, BarkModel, AutoTokenizer
+from transformers.utils import logging
 import torch
 from scipy.io.wavfile import write
 import numpy as np
 from tqdm import tqdm
+from librosa.effects import trim, split
+
+
+logging.set_verbosity_error()
 
 
 @click.command()
@@ -25,7 +30,7 @@ def read(src, dest, small):
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
     model.to(device)
-    # TODO: add more than just english speaker. There are 9 speakers in total https://github.com/suno-ai/bark/tree/main/bark/assets/prompts/v2
+    # TODO: add more than just english speaker. There are 9 speakers in total https://github.com/suno-ai/bark/tree/main/bark/assets/prompts/v2. Quality of results is different for each speaker though.
     voice_preset = "v2/en_speaker_6"
     result = []
 
@@ -42,15 +47,18 @@ def read(src, dest, small):
         speech_values = model.generate(**inputs)
 
         for s in speech_values.cpu().numpy():
-            result.append(s)
-            result.append(np.zeros(int(0.25 * sampling_rate))) # 0.25 seconds of silence between sentences
+            splitted = split(s, top_db=100)
+            for ss in splitted:
+                if ss[1] - ss[0] < 0.25 * sampling_rate:
+                    continue
+                result.append(s[ss[0]:ss[1]])
+                result.append(np.zeros(int(0.15 * sampling_rate))) # 0.25 seconds of silence between sentences
         
-        result.append(np.zeros(int(0.5 * sampling_rate))) # 0.5 seconds of silence between sections
+        result.append(np.zeros(int(1.0 * sampling_rate))) # 1 second of silence between sections
 
     result = np.concatenate(result)
-    write(dest, sampling_rate, result)  # TODO: add option to save as mp3, wav are huge
-
-
+    if dest.endswith("wav"):
+        write(dest, sampling_rate, result)
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ dependencies = [
     "transformers",
     "torch",
     "tqdm",
+    "librosa",
 ]
 dynamic = ["version"]
 
